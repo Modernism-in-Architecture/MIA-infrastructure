@@ -8,3 +8,4 @@ secrets_file: "{{ playbook_dir }}/../.secrets.production"
 django_image: "ghcr.io/modernism-in-architecture/mia-django:latest"
 deploy_postgres: false
 deploy_django: false
+allow_postgres_access: false

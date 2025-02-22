@@ -6,6 +6,8 @@
     - ../inventory/group_vars/all.yml
     - ../inventory/group_vars/{{ env }}.yml
   roles:
+    - role: ../roles/ufw
+      tags: ufw
     - role: ../roles/helm
       tags: helm
     - role: ../roles/k3s

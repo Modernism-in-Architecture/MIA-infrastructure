@@ -8,3 +8,4 @@ secrets_file: "{{ playbook_dir }}/../.secrets.staging"
 django_image: "ghcr.io/modernism-in-architecture/mia-django-dev:v0.0.8"
 deploy_postgres: false
 deploy_django: false
+allow_postgres_access: false

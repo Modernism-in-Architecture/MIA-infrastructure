@@ -1,0 +1,43 @@
+---
+- name: Ensure UFW is installed
+  apt:
+    name: ufw
+    state: present
+  become: yes
+
+- name: Allow SSH Access (Avoid Lockout)
+  command: ufw allow ssh
+  become: yes
+
+- name: Allow Kubernetes API Server (Port 6443)
+  command: ufw allow 6443/tcp
+  become: yes
+
+- name: Allow NodePort Services (30000-32767)
+  command: ufw allow 30000:32767/tcp
+  become: yes
+
+- name: Allow HTTP & HTTPS for Ingress
+  command: ufw allow proto tcp from any to any port 80,443
+  become: yes
+
+- name: Allow Internal Cluster Communication
+  command: ufw allow 10250/tcp
+  become: yes
+
+- name: Allow PostgreSQL Internal Access (Optional)
+  command: ufw allow 5432/tcp
+  become: yes
+  when: allow_postgres_access | default(false)
+
+- name: Enable UFW & Deny Everything Else by Default
+  command: ufw --force enable
+  become: yes
+
+- name: Ensure UFW Default Policy Blocks Incoming Traffic
+  command: ufw default deny incoming
+  become: yes
+
+- name: Ensure UFW Allows Outgoing Traffic
+  command: ufw default allow outgoing
+  become: yes
