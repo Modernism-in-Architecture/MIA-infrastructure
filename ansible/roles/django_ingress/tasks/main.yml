@@ -1,0 +1,43 @@
+---
+- name: Check if Django Ingress Exists
+  command: kubectl get ingress django-ingress-{{ name_space }} -n {{ name_space }}
+  register: ingress_check
+  ignore_errors: yes
+  changed_when: false
+
+- name: Apply Django Ingress Rule if Missing
+  template:
+    src: ingress.yml.j2
+    dest: /tmp/ingress-{{ name_space }}.yml
+  when: ingress_check.rc != 0
+
+- name: Deploy Django Ingress to Kubernetes
+  command: kubectl apply -f /tmp/ingress-{{ name_space }}.yml
+  when: ingress_check.rc != 0
+
+- name: Check if Certificate Requests Exist
+  command: kubectl get certificaterequest -n {{ name_space }} --no-headers
+  register: cert_requests
+  ignore_errors: yes
+  changed_when: false
+
+- name: Debug Certificate Requests
+  debug:
+    msg: "Certificate Requests found: {{ cert_requests.stdout_lines }}"
+  when: cert_requests.stdout_lines | length > 0
+
+- name: Wait for Certificate Request to be Created
+  shell: kubectl wait --for=condition=Ready --timeout=300s -n {{ name_space }} certificaterequest --all
+  when: cert_requests.stdout_lines | length > 1
+  ignore_errors: yes
+  changed_when: false
+
+- name: Verify Certificate Exists
+  command: kubectl get certificate -n {{ name_space }}
+  register: cert_check
+  changed_when: false
+
+- name: Debug Certificate Status
+  debug:
+    msg: "{{ cert_check.stdout }}"
+...

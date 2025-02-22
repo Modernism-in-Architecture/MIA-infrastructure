@@ -1,0 +1,27 @@
+---
+- name: Check if namespace exists
+  command: kubectl get namespace {{ item }}
+  register: namespace_check
+  ignore_errors: yes
+  changed_when: false
+  loop: "{{ namespaces }}"
+  loop_control:
+    label: "{{ item }}"
+    index_var: index_var
+
+- name: Debug Namespace Check
+  debug:
+    msg: "Namespace {{ item }} exists: {{ namespace_check.results[index_var].rc == 0 }}"
+  loop: "{{ namespaces }}"
+  loop_control:
+    label: "{{ item }}"
+    index_var: index_var
+
+- name: Ensure namespaces exist
+  shell: kubectl create namespace {{ item }} --dry-run=client -o yaml | kubectl apply -f -
+  when: namespace_check.results[index_var].rc != 0
+  loop: "{{ namespaces }}"
+  loop_control:
+    label: "{{ item }}"
+    index_var: index_var
+...

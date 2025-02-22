@@ -1,0 +1,24 @@
+---
+- name: Check if PostgreSQL Secret exists
+  command: kubectl get secret postgres-secrets-{{ name_space }} -n {{ name_space }}
+  register: postgres_secret_check
+  ignore_errors: yes
+  changed_when: false
+
+- name: Create PostgreSQL Secret in Kubernetes
+  shell: >
+    kubectl create secret generic postgres-secrets-{{ name_space }}
+    --from-env-file={{ secrets_file }}
+    -n {{ name_space }} --dry-run=client -o yaml | kubectl apply -f -
+  when: postgres_secret_check.rc != 0
+
+- name: Apply PostgreSQL Deployment for {{ name_space }}
+  template:
+    src: postgres-deployment.yml.j2
+    dest: /tmp/postgres-deployment-{{ name_space }}.yml
+  when: deploy_postgres 
+
+- name: Deploy PostgreSQL to Kubernetes
+  command: kubectl apply -f /tmp/postgres-deployment-{{ name_space }}.yml
+  when: deploy_postgres
+...

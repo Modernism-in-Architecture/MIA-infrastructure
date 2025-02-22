@@ -1,0 +1,10 @@
+env: "staging"
+name_space: "staging"
+host: "staging.modernism-in-architecture.org"
+postgres_storage: "4Gi"
+postgres_version: 15
+secrets_github_file: "{{ playbook_dir }}/../.secrets.github"
+secrets_file: "{{ playbook_dir }}/../.secrets.staging"
+django_image: "ghcr.io/modernism-in-architecture/mia-django-dev:v0.0.8"
+deploy_postgres: false
+deploy_django: false

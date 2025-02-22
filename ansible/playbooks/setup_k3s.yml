@@ -1,0 +1,10 @@
+---
+- name: Install K3s
+  hosts: k3s_nodes
+  become: yes
+  vars_files:
+    - ../inventory/group_vars/all.yml
+  roles:
+    - ../roles/k3s
+    - ../roles/namespaces
+...

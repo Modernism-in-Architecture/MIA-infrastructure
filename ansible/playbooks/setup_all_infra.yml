@@ -1,0 +1,19 @@
+---
+- name: Full Infrastructure Setup
+  hosts: hetzner_server
+  become: yes
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/{{ env }}.yml
+  roles:
+    - role: ../roles/helm
+      tags: helm
+    - role: ../roles/k3s
+      tags: k3s
+    - role: ../roles/namespaces
+      tags: namespaces
+    - role: ../roles/ingress_controller
+      tags: ingress
+    - role: ../roles/cert-manager
+      tags: certmanager
+...

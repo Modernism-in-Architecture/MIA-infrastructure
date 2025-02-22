@@ -1,0 +1,21 @@
+---
+- name: Check if Helm is already installed
+  command: helm version
+  register: helm_check
+  ignore_errors: yes
+  changed_when: false
+
+- name: Install Helm if Not Installed
+  shell: |
+    curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  when: helm_check.rc != 0
+
+- name: Verify Helm Installation
+  command: helm version
+  register: helm_installed
+  changed_when: false
+
+- name: Debug Helm Version
+  debug:
+    msg: "{{ helm_installed.stdout }}"
+...

@@ -1,0 +1,10 @@
+env: "production"
+name_space: "production"
+host: "modernism-in-architecture.org"
+postgres_storage: "4Gi"
+postgres_version: 15
+secrets_github_file: "{{ playbook_dir }}/../.secrets.github"
+secrets_file: "{{ playbook_dir }}/../.secrets.production"
+django_image: "ghcr.io/modernism-in-architecture/mia-django:latest"
+deploy_postgres: false
+deploy_django: false

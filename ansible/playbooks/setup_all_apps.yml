@@ -1,0 +1,14 @@
+---
+- name: Deploy Applications
+  hosts: localhost
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/{{ env }}.yml
+  roles:
+    - role: ../roles/postgres
+      tags: postgres
+    - role: ../roles/django
+      tags: django
+    - role: ../roles/django_ingress
+      tags: ingress_django
+...

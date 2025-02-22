@@ -1,0 +1,25 @@
+---
+- name: Install required dependencies
+  apt:
+    name: ["curl", "wget", "git", "iptables"]
+    state: present
+    update_cache: yes
+
+- name: Check if K3s is already installed
+  stat:
+    path: /usr/local/bin/k3s
+  register: k3s_binary
+
+- name: Download and install K3s if not already installed
+  shell: |
+    curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="{{ k3s_version }}" INSTALL_K3S_EXEC="--disable traefik --write-kubeconfig-mode 644" sh -
+  args:
+    creates: /etc/rancher/k3s/k3s.yaml
+  when: not k3s_binary.stat.exists
+
+- name: Ensure K3s service is enabled and running
+  systemd:
+    name: k3s
+    enabled: yes
+    state: started
+...

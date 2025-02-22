@@ -1,0 +1,41 @@
+---
+- name: Check if GitHub Registry Secret exists
+  command: kubectl get secret github-registry-secret -n {{ name_space }}
+  register: github_secret_check
+  ignore_errors: yes
+  changed_when: false
+
+- name: Create GitHub Registry Secret in Kubernetes (only if missing)
+  shell: >
+    kubectl create secret docker-registry github-registry-secret
+    --docker-server=ghcr.io
+    --docker-username="$(grep GITHUB_USERNAME {{ secrets_github_file }} | cut -d '=' -f2)"
+    --docker-password="$(grep GITHUB_TOKEN {{ secrets_github_file }} | cut -d '=' -f2)"
+    --docker-email="$(grep GITHUB_EMAIL {{ secrets_github_file }} | cut -d '=' -f2)"
+    --namespace={{ name_space }}
+    --dry-run=client -o yaml | kubectl apply -f -
+  when: github_secret_check.rc != 0
+
+- name: Check if Django Secret exists
+  command: kubectl get secret django-secrets-{{ name_space }} -n {{ name_space }}
+  register: django_secret_check
+  ignore_errors: yes
+  changed_when: false
+
+- name: Create Django Secret in Kubernetes
+  shell: >
+    kubectl create secret generic django-secrets-{{ name_space }}
+    --from-env-file={{ secrets_file }}
+    -n {{ name_space }} --dry-run=client -o yaml | kubectl apply -f -
+  when: django_secret_check.rc != 0
+
+- name: Apply Django Deployment for {{ name_space }}
+  template:
+    src: django-deployment.yml.j2
+    dest: /tmp/django-deployment-{{ name_space }}.yml
+  when: deploy_django
+ 
+- name: Deploy Django to Kubernetes
+  command: kubectl apply -f /tmp/django-deployment-{{ name_space }}.yml
+  when: deploy_django
+...

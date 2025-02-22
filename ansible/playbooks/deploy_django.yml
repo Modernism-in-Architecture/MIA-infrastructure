@@ -1,0 +1,9 @@
+---
+- name: Deploy Django on Kubernetes
+  hosts: localhost
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/{{ env }}.yml
+  roles:
+    - ../roles/django
+...

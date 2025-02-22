@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-{{ name_space }}
+  namespace: {{ name_space }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django
+  template:
+    metadata:
+      labels:
+        app: django
+    spec:
+      containers:
+      - name: django
+        image: {{ django_image }}
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DJANGO_SETTINGS_MODULE
+          valueFrom:
+            secretKeyRef:
+              name: django-secrets-{{ name_space }}
+              key: DJANGO_SETTINGS_MODULE
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: django-secrets-{{ name_space }}
+              key: SECRET_KEY
+        - name: ALLOWED_HOSTS
+          valueFrom:
+            secretKeyRef:
+              name: django-secrets-{{ name_space }}
+              key: ALLOWED_HOSTS
+        - name: DEBUG
+          valueFrom:
+            secretKeyRef:
+              name: django-secrets-{{ name_space }}
+              key: DEBUG
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secrets-{{ name_space }}
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secrets-{{ name_space }}
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secrets-{{ name_space }}
+              key: POSTGRES_DB
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: django-secrets-{{ name_space }}
+              key: DATABASE_URL
+        envFrom:
+        - secretRef:
+            name: django-secrets-{{ name_space }}
+      imagePullSecrets:
+      - name: github-registry-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-service-{{ name_space }}
+  namespace: {{ name_space }}
+spec:
+  selector:
+    app: django
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP

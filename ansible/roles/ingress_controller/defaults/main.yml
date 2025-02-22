@@ -1,0 +1,4 @@
+---
+ingress_namespace: "kube-system"
+ingress_chart_name: "nginx-ingress"
+...

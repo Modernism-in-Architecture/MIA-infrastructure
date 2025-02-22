@@ -1,0 +1,41 @@
+---
+- name: Check if Nginx Ingress Helm Repo is Already Added
+  command: helm repo list
+  register: helm_repo_list
+  changed_when: false
+  ignore_errors: yes
+
+- name: Debug helm repo list stdout
+  debug:
+    msg: "{{ helm_repo_list.stdout }}"
+
+- name: Add Helm Repo for Nginx Ingress if missing
+  command: helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+  when: "'ingress-nginx' not in helm_repo_list.stdout"
+
+- name: Update Helm repositories if new
+  command: helm repo update
+  when: "'ingress-nginx' not in helm_repo_list.stdout"
+
+- name: Check if Ingress Controller is already installed
+  shell: helm list -n kube-system | grep nginx-ingress
+  register: controller_check
+  changed_when: false
+  ignore_errors: yes
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Debug controller_check stdout 
+  debug:
+    msg: "{{ controller_check.stdout }}"
+
+- name: Install Nginx Ingress Controller if not installed
+  command: >
+    helm install nginx-ingress ingress-nginx/ingress-nginx
+    --namespace kube-system
+    --set controller.service.type=LoadBalancer
+    --set controller.service.externalTrafficPolicy=Local
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  when: "'ingress-nginx' not in controller_check.stdout"
+...

@@ -1,0 +1,5 @@
+---
+cert_manager_namespace: "cert-manager"
+cert_manager_version: "latest"
+cert_manager_email: "hello@normade.dev"
+...
